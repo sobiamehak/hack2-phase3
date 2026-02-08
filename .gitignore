@@ -1,72 +1,20 @@
-# Dependencies
-node_modules/
-__pycache__/
-*.pyc
-.venv/
-venv/
-dist/
-build/
-*.egg-info/
-target/
-*.class
-*.jar
-bin/
-obj/
-*.exe
-*.dll
-*.so
-*.a
-.DS_Store
-Thumbs.db
-
 # Environment variables
-.env*
+.env
 .env.local
-.env.production
-.env.development
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Logs
-*.log
-logs/
-log/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Tests
-coverage/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Next.js
-.next/
-out/
-
-# FastAPI/Python
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-.Python
-*.so
-.Python
-*.egg-info/
-.eggs/
-.venv/
-venv/
-env/
-ENV/
-
-# Database
+# Database files
 *.db
 *.db-journal
 
-# OS
+# Logs
+*.log
+server.log
+simple_chatbot.log
+
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -74,53 +22,46 @@ ENV/
 .Trashes
 ehthumbs.db
 Thumbs.db
-*.nupkg
-*.zip
-*.tar
-*.gz
-*.rar
-*.7z
 
-# Build outputs
-dist/
-build/
-public/
-.next/
-out/
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnp
-.pnp.js
-*.tsbuildinfo
-.next/
-.nuxt/
-.vuepress/dist
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.ENV
+.egg-info/
+.eggs/
 .coverage
-nyc_output
-coverage/
-node_modules
-jspm_packages/
-web-build/
-.svelte-kit/
-.output/
-standalone/
-.prisma/
-prisma/migrations/
-.env
+htmlcov/
+.pytest_cache/
+.pyre/
+.mypy_cache/
 
-# Temporary files
-*.tmp
-*.temp
-*~
-.#*
-*#
-*.bak
+# IDE
+.vscode/
+.idea/
 *.swp
 *.swo
-.SVN/
-.git/
-!.gitkeep
+
+# Local config
+config/local.json
+
+# Node modules and frontend build files
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+out/
+
+# Large temporary directories
+tmpclaude-*/
+chatbot/simple-chat-frontend/node_modules/
+chatbot/chatbot-frontend/node_modules/
+chatbot/backend/node_modules/
+frontend/node_modules/
