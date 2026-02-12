@@ -17,20 +17,21 @@ interface Task {
 }
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
-  // Check if user is authenticated
+  // Check if user is authenticated (wait for auth to finish loading first)
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push('/login');
     } else {
       fetchTasks();
     }
-  }, [user, router]);
+  }, [user, router, authLoading]);
 
   // Refresh tasks when chatbot modifies them
   useEffect(() => {
@@ -137,11 +138,7 @@ export default function Dashboard() {
     }
   };
 
-  if (!user) {
-    return null; // Will redirect in useEffect
-  }
-
-  if (loading) {
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-xl text-gray-600 flex items-center">
