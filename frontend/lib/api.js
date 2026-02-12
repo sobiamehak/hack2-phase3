@@ -1,17 +1,17 @@
 // API client utilities for JWT handling
-import authClient from './auth-client';
+// Note: Using localStorage-based auth instead of Better Auth client for now
+// since the current auth system stores user data in localStorage
 
 class ApiClient {
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
   }
 
-  // Get JWT token from auth client
+  // Get JWT token from localStorage (where it should be stored after login)
   async getAuthToken() {
-    // Assuming the auth client provides a way to get the JWT token
-    // This might vary based on the actual Better Auth client API
-    const session = await authClient.getSession();
-    return session?.token || null;
+    // Try to get token from localStorage
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+    return token;
   }
 
   // Create headers with JWT token
@@ -44,7 +44,11 @@ class ApiClient {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Don't throw error immediately, just return response info
+      // This allows the calling function to handle different status codes appropriately
+      const errorText = await response.text();
+      console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
     return response.json();

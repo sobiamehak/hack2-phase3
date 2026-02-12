@@ -9,21 +9,38 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
     try {
-      // Placeholder for actual authentication logic
-      // This would use the backend API to authenticate the user
-      console.log('Attempting to login with:', { email, password });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Simulate authentication success
-      await login({ email, id: 'mock-user-id' });
-    } catch (err) {
-      setError(err.message || 'Login failed');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Login failed');
+      }
+
+      // Store token and user_id for chatbot and API access
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user_id', data.user_id);
+
+      // Update auth context
+      await login({ id: data.user_id, email: data.email });
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,9 +74,7 @@ export default function Login() {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">
-                    {error}
-                  </p>
+                  <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
             </div>
@@ -101,9 +116,10 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                className="btn-primary w-full py-3 text-base"
+                disabled={isLoading}
+                className="btn-primary w-full py-3 text-base disabled:opacity-50"
               >
-                Sign in
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>

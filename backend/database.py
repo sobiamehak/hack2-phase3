@@ -1,25 +1,39 @@
 from sqlmodel import create_engine, Session
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import StaticPool, QueuePool
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
-load_dotenv()
+# Resolve backend dir first, then load .env from there explicitly
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BACKEND_DIR, ".env"), override=True)
+DB_PATH = os.path.join(BACKEND_DIR, "chatbot.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
-# Get database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL")
+# For SQLite relative paths, resolve against backend directory
+if DATABASE_URL.startswith("sqlite:///./"):
+    relative_db = DATABASE_URL.replace("sqlite:///./", "")
+    DATABASE_URL = f"sqlite:///{os.path.join(BACKEND_DIR, relative_db)}"
 
-# Create engine with enhanced connection pooling
-engine = create_engine(
-    DATABASE_URL,
-    poolclass=QueuePool,
-    pool_size=10,  # Increased pool size for better performance
-    max_overflow=20,  # Allow more connections during peak load
-    pool_pre_ping=True,  # Verify connections before use
-    pool_recycle=300,  # Recycle connections every 5 minutes
-    pool_timeout=30,  # Wait up to 30 seconds for a connection
-    echo=False,  # Set to True for SQL query logging (useful for debugging)
-)
+# SQLite needs special pooling config
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=False,
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        poolclass=QueuePool,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        pool_timeout=30,
+        echo=False,
+    )
+
 
 def get_session():
     with Session(engine) as session:

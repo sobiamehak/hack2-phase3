@@ -1,7 +1,7 @@
 'use client';
 
 interface Todo {
-  id: number;
+  id: string;
   title: string;
   description?: string;
   completed: boolean;
@@ -10,8 +10,8 @@ interface Todo {
 
 interface TodoItemProps {
   todo: Todo;
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {

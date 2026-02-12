@@ -10,3 +10,5 @@ alembic==1.13.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 sse-starlette==1.6.5
+requests==2.32.3
+python-dotenv==1.0.1

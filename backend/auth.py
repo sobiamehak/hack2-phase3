@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional
-import jwt
+from jose import jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
@@ -12,10 +12,9 @@ from database import get_session
 from models import User
 
 # Load environment variables
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), override=True)
 
-# Initialize password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt 5.x direct usage (passlib incompatible with bcrypt>=4.1)
 
 # Initialize JWT security scheme
 security = HTTPBearer()
@@ -41,17 +40,21 @@ class UserCreate(BaseModel):
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify a plain password against a hashed password.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a plain password against a hashed password."""
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8"),
+        )
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """
-    Hash a plain password.
-    """
-    return pwd_context.hash(password)
+    """Hash a plain password using bcrypt."""
+    pwd_bytes = password.encode("utf-8")[:72]  # bcrypt 72-byte limit
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def authenticate_user(session: Session, email: str, password: str) -> Optional[User]:

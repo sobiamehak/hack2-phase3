@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Mock Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Setup Mock Authentication</h1>
+        
+        <div class="info">
+            <strong>This page will set up mock authentication data in your browser's localStorage.</strong><br>
+            This will allow the frontend to work with the backend API.
+        </div>
+        
+        <h3>User Information:</h3>
+        <p><strong>User ID:</strong> <span id="userIdDisplay">testuser123</span></p>
+        <p><strong>Email:</strong> <span id="emailDisplay">test@example.com</span></p>
+        <p><strong>Token:</strong> <span id="tokenDisplay">mock-jwt-token-for-testing</span></p>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="setupMockAuth()">Setup Mock Authentication</button>
+            <button onclick="clearAuth()">Clear Authentication</button>
+            <button onclick="checkAuth()">Check Current Auth Status</button>
+        </div>
+        
+        <div id="result" style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px;"></div>
+    </div>
+
+    <script>
+        function setupMockAuth() {
+            // Create mock user data
+            const mockUser = {
+                id: 'testuser123',
+                email: 'test@example.com',
+                name: 'Test User',
+                created_at: new Date().toISOString()
+            };
+            
+            // Create a mock JWT-like token (this is just for testing)
+            const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
+                             'eyJzdWIiOiJ0ZXN0dXNlcjEyMyIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTUzMzg4ODIyLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.' +
+                             'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+            
+            // Store in localStorage
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            localStorage.setItem('user_id', mockUser.id);
+            localStorage.setItem('auth_token', mockToken);
+            localStorage.setItem('token', mockToken);
+            
+            document.getElementById('result').innerHTML = 
+                '<p style="color: green;">✓ Mock authentication data has been set!</p>' +
+                '<p>User: ' + mockUser.name + ' (' + mockUser.email + ')</p>' +
+                '<p>ID: ' + mockUser.id + '</p>';
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('token');
+            
+            document.getElementById('result').innerHTML = 
+                '<p style="color: orange;">Authentication data cleared.</p>';
+        }
+        
+        function checkAuth() {
+            const userData = localStorage.getItem('user');
+            const userId = localStorage.getItem('user_id');
+            const authToken = localStorage.getItem('auth_token');
+            
+            let result = '<h4>Current Authentication Status:</h4>';
+            
+            if (userData) {
+                const user = JSON.parse(userData);
+                result += `<p><strong>User:</strong> ${user.name} (${user.email})</p>`;
+                result += `<p><strong>ID:</strong> ${user.id}</p>`;
+            } else {
+                result += '<p style="color: red;"><strong>No user data found</strong></p>';
+            }
+            
+            result += `<p><strong>User ID:</strong> ${userId || 'Not set'}</p>`;
+            result += `<p><strong>Auth Token:</strong> ${authToken ? 'Set (length: ' + authToken.length + ')' : 'Not set'}</p>`;
+            
+            document.getElementById('result').innerHTML = result;
+        }
+        
+        // Show current status on page load
+        window.onload = function() {
+            checkAuth();
+        };
+    </script>
+</body>
+</html>

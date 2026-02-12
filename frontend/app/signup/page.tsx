@@ -28,13 +28,35 @@ export default function Signup() {
     }
 
     try {
-      // Placeholder for actual signup logic
-      // This would use the backend API to register the user
-      console.log('Attempting to signup with:', { name, email, password });
+      // Register with backend
+      const registerRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Simulate signup success
-      await signup({ name, email, id: 'mock-user-id' });
-    } catch (err) {
+      const registerData = await registerRes.json();
+      if (!registerRes.ok) {
+        throw new Error(registerData.detail || 'Registration failed');
+      }
+
+      // Auto-login after registration
+      const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) {
+        throw new Error(loginData.detail || 'Auto-login failed');
+      }
+
+      localStorage.setItem('token', loginData.access_token);
+      localStorage.setItem('user_id', loginData.user_id);
+
+      await signup({ name, email, id: loginData.user_id });
+    } catch (err: any) {
       setError(err.message || 'Signup failed');
     }
   };

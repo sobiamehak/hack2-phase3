@@ -9,7 +9,7 @@ import TodoList from '../../components/TodoList';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 interface Task {
-  id: number;
+  id: string;
   title: string;
   description?: string;
   completed: boolean;
@@ -28,21 +28,34 @@ export default function Dashboard() {
     if (!user) {
       router.push('/login');
     } else {
-      // Load tasks on component mount
       fetchTasks();
     }
   }, [user, router]);
 
+  // Refresh tasks when chatbot modifies them
+  useEffect(() => {
+    const handler = () => fetchTasks();
+    window.addEventListener('tasks-updated', handler);
+    return () => window.removeEventListener('tasks-updated', handler);
+  }, [user]);
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      // In a real implementation, we'd fetch from the API
-      // For now, we'll use mock data
-      const mockTasks: Task[] = [
-        { id: 1, title: 'Sample Task', description: 'This is a sample task', completed: false, created_at: new Date().toISOString() },
-        { id: 2, title: 'Another Task', description: 'This is another sample task', completed: true, created_at: new Date().toISOString() }
-      ];
-      setTasks(mockTasks);
+      // Fetch tasks from the API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/${user.id}/tasks/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
+      }
+      
+      const tasksData = await response.json();
+      setTasks(tasksData);
     } catch (err) {
       setError('Failed to load tasks');
       console.error(err);
@@ -51,27 +64,76 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddTask = (title: string, description: string) => {
-    const newTask: Task = {
-      id: tasks.length + 1,
-      title,
-      description,
-      completed: false,
-      created_at: new Date().toISOString()
-    };
+  const handleAddTask = async (title: string, description: string) => {
+    if (!user) return;
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/${user.id}/tasks/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description: description || null }),
+      });
 
-    setTasks([...tasks, newTask]);
-    setError('');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Failed to add task');
+      }
+
+      setError('');
+      await fetchTasks();
+    } catch (err: any) {
+      setError(err.message || 'Failed to add task');
+      console.error(err);
+    }
   };
 
-  const toggleTaskCompletion = (taskId: number) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
+  const toggleTaskCompletion = async (taskId: string) => {
+    if (!user) return;
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/${user.id}/tasks/${taskId}/complete`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+
+      await fetchTasks();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update task');
+      console.error(err);
+    }
   };
 
-  const deleteTask = (taskId: number) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+  const deleteTask = async (taskId: string) => {
+    if (!user) return;
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/${user.id}/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      await fetchTasks();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete task');
+      console.error(err);
+    }
   };
 
   if (!user) {

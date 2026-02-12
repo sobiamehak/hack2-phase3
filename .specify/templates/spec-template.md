@@ -1,83 +1,115 @@
 # Feature Specification: [FEATURE NAME]
 
-**Feature:** [LINK TO SPEC FILE]
-**Created:** [DATE]
-**Status:** Proposed
+**Feature Branch**: `[###-feature-name]`  
+**Created**: [DATE]  
+**Status**: Draft  
+**Input**: User description: "$ARGUMENTS"
 
-## Overview
+## User Scenarios & Testing *(mandatory)*
 
-[High-level description of the feature and its purpose]
+<!--
+  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
+  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
+  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+  
+  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
+  Think of each story as a standalone slice of functionality that can be:
+  - Developed independently
+  - Tested independently
+  - Deployed independently
+  - Demonstrated to users independently
+-->
 
-## User Scenarios & Testing
+### User Story 1 - [Brief Title] (Priority: P1)
 
-### Primary User Flows
+[Describe this user journey in plain language]
 
-1. [Scenario 1 - user performs action, expects outcome]
-2. [Scenario 2 - user performs action, expects outcome]
+**Why this priority**: [Explain the value and why it has this priority level]
 
-### Edge Cases & Error Conditions
+**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
 
-- [What happens when...]
-- [Error scenario and expected behavior]
+**Acceptance Scenarios**:
 
-## Functional Requirements
+1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+2. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
-### Requirement 1: [Title]
-- **Description**: [What the system must do]
-- **Acceptance Criteria**: [How to verify it works]
-- **Priority**: [High/Medium/Low]
+---
 
-### Requirement 2: [Title]
-- **Description**: [What the system must do]
-- **Acceptance Criteria**: [How to verify it works]
-- **Priority**: [High/Medium/Low]
+### User Story 2 - [Brief Title] (Priority: P2)
 
-[Additional requirements as needed]
+[Describe this user journey in plain language]
 
-## Non-Functional Requirements
+**Why this priority**: [Explain the value and why it has this priority level]
 
-### Performance
-- [Response time, throughput, capacity requirements]
+**Independent Test**: [Describe how this can be tested independently]
 
-### Security
-- [Authentication, authorization, privacy requirements]
+**Acceptance Scenarios**:
 
-### Scalability
-- [Load, concurrency, growth requirements]
+1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
-### Availability
-- [Uptime, reliability requirements]
+---
 
-## Success Criteria
+### User Story 3 - [Brief Title] (Priority: P3)
 
-[Measurable outcomes that indicate the feature is successful from a user and business perspective]
+[Describe this user journey in plain language]
 
-## Key Entities
+**Why this priority**: [Explain the value and why it has this priority level]
 
-[Data entities, objects, or concepts that are central to this feature]
+**Independent Test**: [Describe how this can be tested independently]
 
-- **[Entity 1]**: [Description]
-- **[Entity 2]**: [Description]
+**Acceptance Scenarios**:
 
-## Constraints & Dependencies
+1. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
-### Technical Constraints
-- [System limitations, platform restrictions]
+---
 
-### External Dependencies
-- [Third-party services, APIs, integrations]
+[Add more user stories as needed, each with an assigned priority]
 
-### Business Constraints
-- [Timeline, budget, regulatory requirements]
+### Edge Cases
 
-## Assumptions
+<!--
+  ACTION REQUIRED: The content in this section represents placeholders.
+  Fill them out with the right edge cases.
+-->
 
-[Any assumptions made during specification that could impact the feature]
+- What happens when [boundary condition]?
+- How does system handle [error scenario]?
 
-## Scope
+## Requirements *(mandatory)*
 
-### In Scope
-- [What is included in this feature]
+<!--
+  ACTION REQUIRED: The content in this section represents placeholders.
+  Fill them out with the right functional requirements.
+-->
 
-### Out of Scope
-- [What is explicitly not included in this feature]
+### Functional Requirements
+
+- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
+- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
+- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
+- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
+- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+
+*Example of marking unclear requirements:*
+
+- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
+- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+
+### Key Entities *(include if feature involves data)*
+
+- **[Entity 1]**: [What it represents, key attributes without implementation]
+- **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Success Criteria *(mandatory)*
+
+<!--
+  ACTION REQUIRED: Define measurable success criteria.
+  These must be technology-agnostic and measurable.
+-->
+
+### Measurable Outcomes
+
+- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
+- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
+- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
+- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]

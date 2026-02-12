@@ -1,48 +1,55 @@
 import logging
 import sys
-from datetime import datetime
 from pathlib import Path
+from pythonjsonlogger import jsonlogger
 
 # Create logs directory if it doesn't exist
 logs_dir = Path("logs")
 logs_dir.mkdir(exist_ok=True)
 
-# Configure logging
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super().add_fields(log_record, record, message_dict)
+        log_record["level"] = record.levelname
+        log_record["logger"] = record.name
+
+
 def setup_logging():
-    # Create custom formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+    json_formatter = CustomJsonFormatter(
+        "%(asctime)s %(level)s %(logger)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
     )
 
-    # Create file handler for general logs
+    # Plain text for console (easier to read during dev)
+    console_formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     file_handler = logging.FileHandler(logs_dir / "app.log")
     file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(json_formatter)
 
-    # Create error file handler
     error_file_handler = logging.FileHandler(logs_dir / "error.log")
     error_file_handler.setLevel(logging.ERROR)
-    error_file_handler.setFormatter(formatter)
+    error_file_handler.setFormatter(json_formatter)
 
-    # Create console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(console_formatter)
 
-    # Get root logger and configure it
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(error_file_handler)
     root_logger.addHandler(console_handler)
 
-    # Suppress overly verbose loggers
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
 
-# Call setup function
+
 setup_logging()
-
-# Create a logger for the application
 logger = logging.getLogger(__name__)

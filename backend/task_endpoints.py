@@ -1,3 +1,4 @@
+import uuid as _uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, delete
 from auth import get_current_user
@@ -7,6 +8,11 @@ from typing import List, Optional
 from logging_config import logger
 import html
 import re
+
+
+def _to_uuid(val):
+    """Convert string to uuid.UUID if needed."""
+    return _uuid.UUID(val) if isinstance(val, str) else val
 
 router = APIRouter(prefix="/{user_id}/tasks", tags=["tasks"])
 
@@ -36,7 +42,8 @@ async def get_tasks(
         )
 
     # Build query
-    query = select(Task).where(Task.user_id == user_id)
+    uid = _to_uuid(user_id)
+    query = select(Task).where(Task.user_id == uid)
 
     # Apply status filter if provided
     if status_filter:
@@ -88,11 +95,12 @@ async def create_task(
         )
 
     # Create task with the authenticated user's ID
+    uid = _to_uuid(user_id)
     db_task = Task(
         title=sanitized_title,
         description=sanitized_description,
         completed=task.completed,
-        user_id=user_id
+        user_id=uid
     )
 
     session.add(db_task)
@@ -133,7 +141,7 @@ async def get_task(
             detail="Not authorized to access this user's tasks"
         )
 
-    task = session.get(Task, task_id)
+    task = session.get(Task, _to_uuid(task_id))
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -184,7 +192,7 @@ async def update_task(
             detail="Not authorized to update this user's tasks"
         )
 
-    db_task = session.get(Task, task_id)
+    db_task = session.get(Task, _to_uuid(task_id))
     if not db_task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -255,7 +263,7 @@ async def delete_task(
             detail="Not authorized to delete this user's tasks"
         )
 
-    task = session.get(Task, task_id)
+    task = session.get(Task, _to_uuid(task_id))
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -307,7 +315,7 @@ async def toggle_task_completion(
             detail="Not authorized to update this user's tasks"
         )
 
-    task = session.get(Task, task_id)
+    task = session.get(Task, _to_uuid(task_id))
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

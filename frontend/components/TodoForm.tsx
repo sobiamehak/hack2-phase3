@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface TodoFormProps {
-  onAddTask: (title: string, description: string) => void;
+  onAddTask: (title: string, description: string) => void | Promise<void>;
 }
 
 export default function TodoForm({ onAddTask }: TodoFormProps) {

@@ -1,89 +1,165 @@
-<!-- Sync Impact Report
-Version Change: N/A (Initial Creation) -> 1.0.0
-Modified Principles: N/A
-Added Sections: All initial principles and governance
-Removed Sections: N/A
-Templates Requiring Updates: N/A (initial creation)
+<!--
+Sync Impact Report
+===================
+Version change: 0.0.0 (template) → 1.0.0
+Modified principles: N/A (initial population from template)
+Added sections:
+  - 6 Core Principles (Stateless Architecture, Database-Driven Context,
+    Tool-Based AI Execution, Security First, Clean Architecture,
+    Reliability & Scalability)
+  - Technology Stack & Constraints
+  - Development Workflow
+  - Governance
+Removed sections: None
+Templates requiring updates:
+  - .specify/templates/plan-template.md — ✅ no updates needed
+    (Constitution Check section is dynamic; will be filled at plan time)
+  - .specify/templates/spec-template.md — ✅ no updates needed
+    (generic structure, no principle-specific coupling)
+  - .specify/templates/tasks-template.md — ✅ no updates needed
+    (phase structure accommodates all 6 principles)
 Follow-up TODOs: None
 -->
 
-# Project Constitution: Hackathon II Todo Full-Stack Web App
-
-**Version:** 1.0.0
-**Ratification Date:** 2026-01-12
-**Last Amended Date:** 2026-01-12
-**Status:** Active
-
-## Purpose
-
-This constitution establishes the governing principles, development practices, and operational guidelines for the Hackathon II Todo Full-Stack Web App project. All contributors must adhere to these principles to ensure consistent, high-quality development outcomes.
+# Todo AI Chatbot – FastAPI Backend Constitution
 
 ## Core Principles
 
-### Principle 1: Spec-Driven Agentic Development
-**Rule:** This is a **spec-driven agentic development** project. **No manual coding allowed** — everything through Claude Code + Spec-Kit Plus workflow.
-**Guidance:** Always follow: Write/Update spec → Generate plan → Break into tasks → Implement.
-**Rationale:** Ensures systematic development with proper documentation and traceability.
+### I. Stateless Architecture
 
-### Principle 2: Monorepo Structure Compliance
-**Rule:** Monorepo structure must be respected:
-- specs/ → all specifications (overview.md, features/, api/, database/, ui/)
-- frontend/ → Next.js 16+ App Router, TypeScript, Tailwind
-- backend/ → FastAPI + SQLModel + Neon Postgres
-- .spec-kit/config.yaml → defined phases (phase2-web: task-crud + authentication)
-**Guidance:** Use @references correctly: @specs/features/task-crud.md, @frontend/CLAUDE.md, @backend/CLAUDE.md etc.
-**Rationale:** Maintains organized project structure with clear separation of concerns.
+- The backend MUST NOT hold in-memory conversational or
+  application state between requests.
+- All conversations and messages MUST be stored in the database.
+- The system MUST survive server restarts without data loss or
+  session corruption.
+- Horizontal scaling MUST be possible by adding instances with
+  no shared process memory.
 
-### Principle 3: Authentication and Security Framework
-**Rule:** Authentication: Better Auth (frontend) + JWT (shared secret via env BETTER_AUTH_SECRET) → FastAPI middleware verifies JWT → enforce user_id ownership on every task operation.
-**Guidance:** API endpoints should preferably use /api/tasks with JWT filtering rather than /api/{user_id}/tasks.
-**Rationale:** Ensures secure, authenticated access with proper user isolation.
+**Rationale**: Statelessness ensures any instance can serve any
+request, enabling zero-downtime deployments and elastic scaling.
 
-### Principle 4: Database and Infrastructure Standards
-**Rule:** Use Neon Serverless PostgreSQL, SQLModel models, users table by Better Auth, tasks table with user_id FK.
-**Guidance:** Security: 401 on no/invalid token, only return own user's tasks.
-**Rationale:** Provides scalable, secure database infrastructure with proper user data isolation.
+### II. Database-Driven Context
 
-### Principle 5: Development Workflow Adherence
-**Rule:**
-1. Before any code change: Read relevant @specs/... files.
-2. Never invent features outside specs/.
-3. When implementing:
-   - Backend changes → respect @backend/CLAUDE.md patterns (routes/, models.py, db.py)
-   - Frontend changes → respect @frontend/CLAUDE.md (server components default, /lib/api.ts client)
-**Rationale:** Ensures consistency and adherence to established patterns and specifications.
+- Conversation history MUST be fetched from PostgreSQL on every
+  chat request; no caching of conversation state in process memory.
+- All tool calls and their results MUST be logged and persisted
+  in the database.
+- User-scoped data isolation MUST be enforced at the query level;
+  one user MUST NOT access another user's data.
 
-### Principle 6: Quality Assurance and Testing
-**Rule:** After implementation: Suggest running tests / docker-compose up / dev servers.
-**Guidance:** If spec needs update: First propose change in spec file, then implement.
-**Rationale:** Maintains high quality and validates implementations before merging.
+**Rationale**: The database is the single source of truth. This
+guarantees auditability, restart safety, and multi-user isolation.
 
-## Phase II Focus
+### III. Tool-Based AI Execution
 
-### Current Priority: Full-Stack Web Application
-**Objective:** Complete task-crud + authentication features as web app.
-**Specific Requirements:**
-- Implement JWT verification middleware in FastAPI
-- Frontend: login/signup with Better Auth → attach JWT to api calls
-- All endpoints protected & filtered by authenticated user
-**Rationale:** Transition from console app to secure, multi-user web application.
+- The AI agent MUST NOT modify the database directly; all task
+  mutations MUST go through MCP tool invocations.
+- Exactly 5 MCP tools are permitted: `add`, `list`, `complete`,
+  `delete`, `update`.
+- Any new task operation MUST be exposed as a dedicated MCP tool
+  and registered before the agent can use it.
+- Tool call inputs and outputs MUST be logged for traceability.
+
+**Rationale**: Constraining mutations to a fixed tool surface
+makes the system auditable, testable, and prevents uncontrolled
+side effects from the language model.
+
+### IV. Security First
+
+- Strict `user_id` validation MUST be enforced on every endpoint
+  that accesses user-scoped data.
+- All database access MUST use the ORM (SQLAlchemy / SQLModel);
+  raw SQL MUST NOT be used.
+- Secrets (API keys, DB credentials) MUST be loaded exclusively
+  from environment variables; hardcoded secrets are forbidden.
+- The chat endpoint MUST enforce rate limiting to prevent abuse.
+- Input from the user MUST be treated as untrusted and sanitized
+  before processing.
+
+**Rationale**: Defense in depth. ORM-only access prevents SQL
+injection; env-only secrets prevent credential leaks; rate
+limiting prevents resource exhaustion.
+
+### V. Clean Architecture
+
+- The codebase MUST follow a modular folder structure with clear
+  separation of concerns: API routes, Agent logic, MCP tools,
+  and Data models in distinct modules.
+- All I/O-bound operations MUST use `async`/`await`; blocking
+  calls inside async handlers are forbidden.
+- Cross-cutting concerns (logging, error handling, auth) MUST
+  be implemented as FastAPI middleware or dependencies, not
+  inlined in route handlers.
+
+**Rationale**: Separation of concerns reduces coupling, makes
+each module independently testable, and keeps the async event
+loop responsive.
+
+### VI. Reliability & Scalability
+
+- The system MUST handle database connection failures gracefully
+  with retry logic and informative error responses.
+- Health check endpoints MUST be exposed for orchestration and
+  monitoring (liveness and readiness probes).
+- Structured JSON logging MUST be used for all log output to
+  enable machine-parseable observability.
+- The API MUST return deterministic error responses with
+  consistent status codes and error schemas.
+
+**Rationale**: Production systems require observable, predictable
+failure modes. Structured logging and health checks are baseline
+requirements for any deployed service.
+
+## Technology Stack & Constraints
+
+- **Runtime**: Python 3.11+
+- **Framework**: FastAPI (async-first)
+- **ORM**: SQLAlchemy 2.x / SQLModel
+- **Database**: PostgreSQL (primary data store)
+- **AI SDK**: OpenAI Agents SDK
+- **Tool Protocol**: MCP (Model Context Protocol)
+- **Secret Management**: Environment variables (`.env` with
+  python-dotenv; never committed to VCS)
+- **Deployment Target**: Containerized (Docker) or PaaS
+  (Render / Railway)
+
+### Constraints
+
+- No raw SQL queries; ORM-only database access.
+- No in-memory state; database is the sole source of truth.
+- Exactly 5 MCP tools; adding a tool requires a constitution
+  amendment (MINOR version bump).
+- All endpoints MUST return JSON; no HTML rendering on the
+  backend.
+
+## Development Workflow
+
+- **Branching**: Feature branches off `main`; PRs required for
+  merge.
+- **Testing**: Unit tests for MCP tools and services; integration
+  tests for API endpoints; contract tests for AI agent behavior.
+- **Code Review**: All PRs MUST be reviewed before merge.
+- **Environment**: `.env` files MUST be listed in `.gitignore`;
+  a `.env.example` MUST be provided with placeholder values.
+- **Commits**: Conventional Commits format (`feat:`, `fix:`,
+  `docs:`, `refactor:`, `test:`, `chore:`).
 
 ## Governance
 
-### Amendment Process
-Changes to this constitution require:
-1. Specification update in @specs/... files
-2. Plan generation reflecting constitutional changes
-3. Approval from project maintainers
-4. Implementation following task breakdown
+- This constitution is the authoritative reference for all
+  architectural and development decisions in the project.
+- Amendments MUST be documented with a version bump, rationale,
+  and migration plan if breaking.
+- Versioning follows Semantic Versioning:
+  - **MAJOR**: Principle removal, redefinition, or backward-
+    incompatible governance change.
+  - **MINOR**: New principle or section added, or material
+    expansion of existing guidance.
+  - **PATCH**: Clarifications, wording fixes, non-semantic
+    refinements.
+- Compliance review: Every PR MUST verify alignment with these
+  principles before merge. Violations MUST be flagged and
+  resolved or justified with an ADR.
+- Runtime development guidance is maintained in `CLAUDE.md`.
 
-### Versioning Policy
-- MAJOR: Backward incompatible governance/principle removals or redefinitions
-- MINOR: New principle/section added or materially expanded guidance
-- PATCH: Clarifications, wording, typo fixes, non-semantic refinements
-
-### Compliance Review
-Regular reviews ensure ongoing adherence to constitutional principles:
-- Code reviews verify principle compliance
-- Automated checks validate structural requirements
-- Periodic governance assessments maintain alignment
+**Version**: 1.0.0 | **Ratified**: 2026-02-11 | **Last Amended**: 2026-02-11
