@@ -74,11 +74,12 @@ async def run_agent(
                 messages=full_messages,
                 tools=TOOL_DEFINITIONS,
                 tool_choice="auto",
+                max_tokens=1024,
             )
         except Exception as e:
-            logger.error(f"OpenAI API error: {e}")
+            logger.error(f"OpenAI API error (model={MODEL}, base_url={BASE_URL}, key_set={bool(API_KEY)}): {e}", exc_info=True)
             return {
-                "response": "I'm having trouble connecting to the AI service right now. Please try again in a moment.",
+                "response": f"I'm having trouble connecting to the AI service right now. Error: {type(e).__name__}: {e}",
                 "tool_name": None,
                 "tool_result": None,
                 "tool_messages": [],

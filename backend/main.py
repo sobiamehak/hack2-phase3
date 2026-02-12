@@ -84,6 +84,17 @@ def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/debug/env")
+def debug_env():
+    return {
+        "OPEN_ROUTER_API_KEY_set": bool(os.getenv("OPEN_ROUTER_API_KEY")),
+        "OPENAI_BASE_URL": os.getenv("OPENAI_BASE_URL", "NOT SET"),
+        "OPENAI_MODEL": os.getenv("OPENAI_MODEL", "NOT SET"),
+        "DATABASE_URL_set": bool(os.getenv("DATABASE_URL")),
+        "FRONTEND_URL": os.getenv("FRONTEND_URL", "NOT SET"),
+    }
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url}")

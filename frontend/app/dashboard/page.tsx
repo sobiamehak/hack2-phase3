@@ -40,6 +40,7 @@ export default function Dashboard() {
   }, [user]);
 
   const fetchTasks = async () => {
+    if (!user) return;
     try {
       setLoading(true);
       // Fetch tasks from the API
